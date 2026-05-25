@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrafficIQ — Web Analytics Intelligence</title>
+  <meta name="description" content="Advanced web traffic analytics dashboard for understanding user behavior, page views, session duration, drop-off points, and user journeys." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Animated background -->
+  <div class="bg-canvas" aria-hidden="true">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 17l4-8 4 5 3-3 4 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="logo-text">TrafficIQ</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#overview" class="nav-item active" id="nav-overview">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/></svg>
+        Overview
+      </a>
+      <a href="#traffic" class="nav-item" id="nav-traffic">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 17l4-8 4 5 3-3 4 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Traffic Trends
+      </a>
+      <a href="#behavior" class="nav-item" id="nav-behavior">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        User Behavior
+      </a>
+      <a href="#journey" class="nav-item" id="nav-journey">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M5 12l4-4M5 12l4 4M19 12l-4-4M19 12l-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        User Journey
+      </a>
+      <a href="#pages" class="nav-item" id="nav-pages">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="2"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Top Pages
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        Live Data
+      </div>
+      <div class="date-range">Last 30 Days</div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <h1 class="page-title">Analytics Overview</h1>
+        <p class="page-subtitle">May 2026 · Website Intelligence Report</p>
+      </div>
+      <div class="header-right">
+        <div class="period-selector">
+          <button class="period-btn active" data-period="30d">30D</button>
+          <button class="period-btn" data-period="7d">7D</button>
+          <button class="period-btn" data-period="90d">90D</button>
+        </div>
+        <button class="export-btn" id="exportBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Export
+        </button>
+      </div>
+    </header>
+
+    <!-- Scrollable Sections -->
+    <div class="content-scroll">
+
+      <!-- Section: Overview KPI Cards -->
+      <section id="overview" class="section">
+        <div class="kpi-grid">
+          <div class="kpi-card" id="kpi-pageviews">
+            <div class="kpi-header">
+              <span class="kpi-label">Total Page Views</span>
+              <div class="kpi-icon icon-blue">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
+              </div>
+            </div>
+            <div class="kpi-value" data-target="2847392">0</div>
+            <div class="kpi-delta positive">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 15l-6-6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              +14.2% vs last period
+            </div>
+            <div class="kpi-sparkline"><canvas id="sparkline-pageviews"></canvas></div>
+          </div>
+
+          <div class="kpi-card" id="kpi-sessions">
+            <div class="kpi-header">
+              <span class="kpi-label">Unique Sessions</span>
+              <div class="kpi-icon icon-purple">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="2"/></svg>
+              </div>
+            </div>
+            <div class="kpi-value" data-target="483201">0</div>
+            <div class="kpi-delta positive">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 15l-6-6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              +8.7% vs last period
+            </div>
+            <div class="kpi-sparkline"><canvas id="sparkline-sessions"></canvas></div>
+          </div>
+
+          <div class="kpi-card" id="kpi-duration">
+            <div class="kpi-header">
+              <span class="kpi-label">Avg Session Duration</span>
+              <div class="kpi-icon icon-teal">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="kpi-value kpi-time">4m 23s</div>
+            <div class="kpi-delta positive">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 15l-6-6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              +22s vs last period
+            </div>
+            <div class="kpi-sparkline"><canvas id="sparkline-duration"></canvas></div>
+          </div>
+
+          <div class="kpi-card" id="kpi-bounce">
+            <div class="kpi-header">
+              <span class="kpi-label">Bounce Rate</span>
+              <div class="kpi-icon icon-orange">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2"/></svg>
+              </div>
+            </div>
+            <div class="kpi-value kpi-percent">38.4%</div>
+            <div class="kpi-delta negative">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              -3.1% vs last period
+            </div>
+            <div class="kpi-sparkline"><canvas id="sparkline-bounce"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Traffic Trends -->
+      <section id="traffic" class="section">
+        <div class="section-header">
+          <h2 class="section-title">Traffic Trends</h2>
+          <div class="chart-legend" id="traffic-legend"></div>
+        </div>
+        <div class="chart-card chart-large">
+          <canvas id="trafficChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Section: User Behavior Row -->
+      <section id="behavior" class="section">
+        <div class="section-header">
+          <h2 class="section-title">User Behavior Insights</h2>
+        </div>
+        <div class="behavior-grid">
+          <!-- Device Breakdown -->
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-card-title">Traffic by Device</span>
+              <span class="chart-card-badge">Breakdown</span>
+            </div>
+            <div class="donut-wrapper">
+              <canvas id="deviceChart"></canvas>
+              <div class="donut-center">
+                <div class="donut-center-value">483K</div>
+                <div class="donut-center-label">Sessions</div>
+              </div>
+            </div>
+            <div class="donut-legend" id="device-legend"></div>
+          </div>
+
+          <!-- Traffic Sources -->
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-card-title">Traffic Sources</span>
+              <span class="chart-card-badge">Channels</span>
+            </div>
+            <div class="bar-chart-wrapper">
+              <canvas id="sourceChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Engagement Score -->
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="chart-card-title">Session Depth</span>
+              <span class="chart-card-badge">Pages/Visit</span>
+            </div>
+            <div class="bar-chart-wrapper">
+              <canvas id="depthChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Drop-off Funnel -->
+      <section id="journey" class="section">
+        <div class="section-header">
+          <h2 class="section-title">User Journey & Drop-off Analysis</h2>
+          <span class="section-tag">Conversion Funnel</span>
+        </div>
+        <div class="funnel-layout">
+          <div class="funnel-chart-card">
+            <div class="funnel-container" id="funnelContainer"></div>
+          </div>
+          <div class="journey-map-card">
+            <div class="journey-map-header">Top User Paths</div>
+            <div class="journey-paths" id="journeyPaths"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Top Pages -->
+      <section id="pages" class="section">
+        <div class="section-header">
+          <h2 class="section-title">Top Pages Performance</h2>
+          <div class="search-input-wrapper">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input type="text" id="pageSearch" placeholder="Search pages..." class="page-search" />
+          </div>
+        </div>
+        <div class="table-card">
+          <table class="pages-table" id="pagesTable">
+            <thead>
+              <tr>
+                <th class="sortable" data-col="page">Page <span class="sort-icon">↕</span></th>
+                <th class="sortable" data-col="views">Views <span class="sort-icon">↕</span></th>
+                <th class="sortable" data-col="duration">Avg Duration <span class="sort-icon">↕</span></th>
+                <th class="sortable" data-col="bounce">Bounce Rate <span class="sort-icon">↕</span></th>
+                <th class="sortable" data-col="exits">Exit Rate <span class="sort-icon">↕</span></th>
+                <th>Performance</th>
+              </tr>
+            </thead>
+            <tbody id="pagesTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section: Geo Map + Hourly Heatmap -->
+      <section class="section">
+        <div class="bottom-grid">
+          <!-- Hourly Activity Heatmap -->
+          <div class="chart-card heatmap-card">
+            <div class="chart-card-header">
+              <span class="chart-card-title">Hourly Traffic Heatmap</span>
+              <span class="chart-card-badge">Activity Pattern</span>
+            </div>
+            <div class="heatmap-wrapper" id="heatmapWrapper"></div>
+            <div class="heatmap-legend">
+              <span class="heatmap-legend-label">Low</span>
+              <div class="heatmap-legend-scale" id="heatmapScale"></div>
+              <span class="heatmap-legend-label">High</span>
+            </div>
+          </div>
+
+          <!-- Geo Distribution -->
+          <div class="chart-card geo-card">
+            <div class="chart-card-header">
+              <span class="chart-card-title">Top Countries</span>
+              <span class="chart-card-badge">Geography</span>
+            </div>
+            <div class="geo-list" id="geoList"></div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- end content-scroll -->
+  </main>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
