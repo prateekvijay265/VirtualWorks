@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DataForge — Data Cleaning & Structural Validation</title>
+  <meta name="description" content="Transform raw, unstructured data into reliable, analysis-ready formats. Detect duplicates, missing values, and inconsistent formats with DataForge." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Background mesh -->
+  <div class="bg-mesh"></div>
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="logo-text">DataForge</span>
+        <span class="logo-badge">v2.0</span>
+      </div>
+      <nav class="nav-pills">
+        <button class="nav-pill active" data-tab="ingest" id="nav-ingest">Import</button>
+        <button class="nav-pill" data-tab="analyze" id="nav-analyze">Analyze</button>
+        <button class="nav-pill" data-tab="clean" id="nav-clean">Clean</button>
+        <button class="nav-pill" data-tab="export" id="nav-export">Export</button>
+      </nav>
+      <div class="header-actions">
+        <div class="status-indicator" id="global-status">
+          <span class="status-dot idle"></span>
+          <span class="status-text">Ready</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- ===== TAB: IMPORT ===== -->
+    <section class="tab-panel active" id="tab-ingest">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Import Data</h1>
+          <p class="section-subtitle">Upload CSV/JSON files or paste raw data directly to begin cleaning</p>
+        </div>
+      </div>
+
+      <div class="import-grid">
+        <!-- Upload Zone -->
+        <div class="card upload-card" id="drop-zone">
+          <div class="upload-icon-wrap">
+            <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="17 8 12 3 7 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="upload-title">Drop files here</p>
+          <p class="upload-hint">Supports <strong>CSV</strong>, <strong>TSV</strong>, <strong>JSON</strong> files up to 50MB</p>
+          <input type="file" id="file-input" accept=".csv,.tsv,.json,.txt" style="display:none" />
+          <button class="btn btn-primary" id="browse-btn">Browse Files</button>
+          <div class="upload-divider"><span>or use a sample</span></div>
+          <div class="sample-btns">
+            <button class="btn btn-ghost btn-sm" id="sample-sales">Sales Data</button>
+            <button class="btn btn-ghost btn-sm" id="sample-employees">Employee Records</button>
+            <button class="btn btn-ghost btn-sm" id="sample-inventory">Inventory</button>
+          </div>
+        </div>
+
+        <!-- Paste Zone -->
+        <div class="card paste-card">
+          <div class="card-header-row">
+            <h3 class="card-title">Paste Raw Data</h3>
+            <div class="format-toggle">
+              <button class="fmt-btn active" data-fmt="csv" id="fmt-csv">CSV</button>
+              <button class="fmt-btn" data-fmt="json" id="fmt-json">JSON</button>
+            </div>
+          </div>
+          <textarea id="raw-input" class="raw-textarea" placeholder="Paste your CSV or JSON data here...
+Example CSV:
+name,age,email,salary
+Alice,28,alice@example.com,75000
+Bob,,bob@example,65000
+Alice,28,alice@example.com,75000
+Charlie,abc,charlie@example.com,"></textarea>
+          <div class="paste-actions">
+            <button class="btn btn-ghost btn-sm" id="clear-input-btn">Clear</button>
+            <button class="btn btn-primary" id="parse-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 3l14 9-14 9V3z" fill="currentColor"/></svg>
+              Parse & Analyze
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent imports -->
+      <div class="card recent-card" id="recent-section" style="display:none">
+        <div class="card-header-row">
+          <h3 class="card-title">Loaded Dataset</h3>
+          <div class="dataset-meta" id="dataset-meta"></div>
+        </div>
+        <div class="table-wrap" id="preview-table-wrap">
+          <table class="data-table" id="preview-table"></table>
+        </div>
+        <div class="card-footer-row">
+          <span class="hint-text" id="preview-hint"></span>
+          <button class="btn btn-accent" id="go-analyze-btn">
+            Analyze Issues
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TAB: ANALYZE ===== -->
+    <section class="tab-panel" id="tab-analyze">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Data Analysis</h1>
+          <p class="section-subtitle">Comprehensive structural validation report across all columns</p>
+        </div>
+        <button class="btn btn-ghost" id="re-analyze-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M23 4v6h-6M1 20v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Re-analyze
+        </button>
+      </div>
+
+      <!-- Health Score -->
+      <div class="health-banner" id="health-banner">
+        <div class="health-score-wrap">
+          <svg class="health-ring" viewBox="0 0 120 120" width="120" height="120">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="url(#scoreGrad)" stroke-width="10"
+              stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314"
+              id="score-ring" style="transform: rotate(-90deg); transform-origin: center;"/>
+            <defs>
+              <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#a78bfa"/>
+                <stop offset="100%" stop-color="#38bdf8"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="health-score-text">
+            <span class="health-score-num" id="health-score-num">–</span>
+            <span class="health-score-label">Health</span>
+          </div>
+        </div>
+        <div class="health-stats">
+          <div class="hstat" id="hstat-rows">
+            <span class="hstat-value">–</span>
+            <span class="hstat-label">Total Rows</span>
+          </div>
+          <div class="hstat" id="hstat-cols">
+            <span class="hstat-value">–</span>
+            <span class="hstat-label">Columns</span>
+          </div>
+          <div class="hstat hstat-warn" id="hstat-dups">
+            <span class="hstat-value">–</span>
+            <span class="hstat-label">Duplicates</span>
+          </div>
+          <div class="hstat hstat-warn" id="hstat-missing">
+            <span class="hstat-value">–</span>
+            <span class="hstat-label">Missing Values</span>
+          </div>
+          <div class="hstat hstat-err" id="hstat-invalid">
+            <span class="hstat-value">–</span>
+            <span class="hstat-label">Format Issues</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column Analysis -->
+      <div class="issues-grid" id="column-analysis">
+        <div class="empty-state">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <p>Import a dataset first to see analysis</p>
+        </div>
+      </div>
+
+      <!-- Issues List -->
+      <div class="card" id="issues-list-card" style="display:none">
+        <div class="card-header-row">
+          <h3 class="card-title">Detected Issues</h3>
+          <div class="filter-chips" id="issue-filters">
+            <button class="chip active" data-filter="all">All</button>
+            <button class="chip" data-filter="duplicate">
+              <span class="chip-dot dup"></span>Duplicates
+            </button>
+            <button class="chip" data-filter="missing">
+              <span class="chip-dot miss"></span>Missing
+            </button>
+            <button class="chip" data-filter="format">
+              <span class="chip-dot fmt"></span>Format
+            </button>
+            <button class="chip" data-filter="outlier">
+              <span class="chip-dot out"></span>Outliers
+            </button>
+          </div>
+        </div>
+        <div class="issues-table-wrap">
+          <table class="issues-table" id="issues-table">
+            <thead>
+              <tr>
+                <th>Row</th>
+                <th>Column</th>
+                <th>Issue Type</th>
+                <th>Current Value</th>
+                <th>Suggestion</th>
+              </tr>
+            </thead>
+            <tbody id="issues-tbody"></tbody>
+          </table>
+        </div>
+        <div class="card-footer-row">
+          <span class="hint-text" id="issues-count-hint"></span>
+          <button class="btn btn-accent" id="go-clean-btn">
+            Apply Fixes
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TAB: CLEAN ===== -->
+    <section class="tab-panel" id="tab-clean">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Data Cleaning</h1>
+          <p class="section-subtitle">Configure and apply automated cleaning rules to fix detected issues</p>
+        </div>
+      </div>
+
+      <div class="clean-layout">
+        <!-- Rules Panel -->
+        <div class="rules-panel">
+          <div class="card rules-card">
+            <h3 class="card-title">Cleaning Rules</h3>
+            <div class="rules-list" id="rules-list">
+              <div class="rule-item">
+                <div class="rule-info">
+                  <div class="rule-icon dup-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2"/></svg>
+                  </div>
+                  <div>
+                    <p class="rule-name">Remove Duplicates</p>
+                    <p class="rule-desc">Eliminate exact duplicate rows</p>
+                  </div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="rule-dedup" checked />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              <div class="rule-item">
+                <div class="rule-info">
+                  <div class="rule-icon miss-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" stroke="currentColor" stroke-width="2"/><path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  </div>
+                  <div>
+                    <p class="rule-name">Fill Missing Values</p>
+                    <p class="rule-desc">Replace nulls with mean/median/mode</p>
+                  </div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="rule-fill" checked />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              <div class="rule-sub" id="fill-strategy-wrap">
+                <label class="rule-sub-label">Strategy</label>
+                <select class="select-input" id="fill-strategy">
+                  <option value="mean">Mean (numeric)</option>
+                  <option value="median">Median (numeric)</option>
+                  <option value="mode">Mode (categorical)</option>
+                  <option value="zero">Zero / Empty string</option>
+                  <option value="drop">Drop rows with missing</option>
+                </select>
+              </div>
+              <div class="rule-item">
+                <div class="rule-info">
+                  <div class="rule-icon fmt-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                  <div>
+                    <p class="rule-name">Standardize Text</p>
+                    <p class="rule-desc">Trim whitespace, fix casing</p>
+                  </div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="rule-text" checked />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              <div class="rule-item">
+                <div class="rule-info">
+                  <div class="rule-icon fmt-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/></svg>
+                  </div>
+                  <div>
+                    <p class="rule-name">Fix Date Formats</p>
+                    <p class="rule-desc">Normalize to ISO 8601 (YYYY-MM-DD)</p>
+                  </div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="rule-dates" checked />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              <div class="rule-item">
+                <div class="rule-info">
+                  <div class="rule-icon out-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="2"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  </div>
+                  <div>
+                    <p class="rule-name">Flag Outliers</p>
+                    <p class="rule-desc">Mark values beyond 3σ from mean</p>
+                  </div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="rule-outliers" checked />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              <div class="rule-item">
+                <div class="rule-info">
+                  <div class="rule-icon fmt-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2"/><polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2"/></svg>
+                  </div>
+                  <div>
+                    <p class="rule-name">Validate Emails</p>
+                    <p class="rule-desc">Flag malformed email addresses</p>
+                  </div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="rule-emails" checked />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              <div class="rule-item">
+                <div class="rule-info">
+                  <div class="rule-icon fmt-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                  <div>
+                    <p class="rule-name">Normalize Numbers</p>
+                    <p class="rule-desc">Remove currency symbols, commas</p>
+                  </div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="rule-numbers" checked />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+            </div>
+            <button class="btn btn-primary w-full" id="apply-rules-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="2"/></svg>
+              Apply All Rules
+            </button>
+          </div>
+        </div>
+
+        <!-- Cleaned Preview -->
+        <div class="clean-preview">
+          <div class="card">
+            <div class="card-header-row">
+              <h3 class="card-title">Cleaned Data Preview</h3>
+              <div class="clean-diff-toggle">
+                <button class="diff-btn active" id="diff-show-changes">Show Changes</button>
+                <button class="diff-btn" id="diff-show-all">Show All</button>
+              </div>
+            </div>
+            <div class="clean-summary-bar" id="clean-summary-bar" style="display:none">
+              <div class="csummary-item csummary-removed">
+                <span class="csummary-num" id="cs-removed">0</span>
+                <span class="csummary-label">Rows Removed</span>
+              </div>
+              <div class="csummary-item csummary-filled">
+                <span class="csummary-num" id="cs-filled">0</span>
+                <span class="csummary-label">Values Filled</span>
+              </div>
+              <div class="csummary-item csummary-fixed">
+                <span class="csummary-num" id="cs-fixed">0</span>
+                <span class="csummary-label">Formats Fixed</span>
+              </div>
+              <div class="csummary-item csummary-flagged">
+                <span class="csummary-num" id="cs-flagged">0</span>
+                <span class="csummary-label">Outliers Flagged</span>
+              </div>
+            </div>
+            <div class="table-wrap" id="clean-table-wrap">
+              <div class="empty-state">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <p>Apply rules to see cleaned preview</p>
+              </div>
+            </div>
+            <div class="card-footer-row" id="clean-footer" style="display:none">
+              <span class="hint-text" id="clean-hint"></span>
+              <button class="btn btn-accent" id="go-export-btn">
+                Export Data
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TAB: EXPORT ===== -->
+    <section class="tab-panel" id="tab-export">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Export</h1>
+          <p class="section-subtitle">Download your cleaned, analysis-ready dataset</p>
+        </div>
+      </div>
+
+      <div class="export-grid">
+        <div class="card export-option" id="export-csv-card">
+          <div class="export-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><polyline points="10 9 9 9 8 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <h3 class="export-format-name">CSV</h3>
+          <p class="export-format-desc">Comma-separated values, compatible with Excel, Google Sheets, and any data tool</p>
+          <button class="btn btn-primary" id="download-csv-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Download CSV
+          </button>
+        </div>
+
+        <div class="card export-option" id="export-json-card">
+          <div class="export-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><polyline points="16 18 22 12 16 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="8 6 2 12 8 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3 class="export-format-name">JSON</h3>
+          <p class="export-format-desc">JavaScript Object Notation, ideal for APIs, web applications, and NoSQL databases</p>
+          <button class="btn btn-primary" id="download-json-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Download JSON
+          </button>
+        </div>
+
+        <div class="card export-option" id="export-report-card">
+          <div class="export-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.5"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.5"/><path d="M12 18v-6m-3 3h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <h3 class="export-format-name">Cleaning Report</h3>
+          <p class="export-format-desc">Full audit trail of all changes made, issues detected, and cleaning decisions</p>
+          <button class="btn btn-primary" id="download-report-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Download Report
+          </button>
+        </div>
+      </div>
+
+      <!-- Export preview -->
+      <div class="card" id="export-preview-card" style="display:none">
+        <div class="card-header-row">
+          <h3 class="card-title">Final Dataset Preview</h3>
+          <span class="badge-success" id="export-row-count"></span>
+        </div>
+        <div class="table-wrap" id="export-table-wrap"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notifications -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loading-overlay" style="display:none">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <p class="loading-text" id="loading-text">Processing...</p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
