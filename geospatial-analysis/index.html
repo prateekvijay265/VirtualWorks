@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoInsight Pro — India & Global Expansion Intelligence</title>
+  <meta name="description" content="Analyze location-based sales data across India and the world to identify optimal areas for business expansion using interactive mapping and geospatial intelligence." />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon"><i class="fas fa-globe-asia"></i></div>
+        <div class="logo-text">
+          <span class="logo-name">GeoInsight</span>
+          <span class="logo-tag">PRO</span>
+        </div>
+      </div>
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
+      <div class="nav-section-label">Views</div>
+      <a href="#" class="nav-item active" data-view="overview" id="navOverview">
+        <i class="fas fa-chart-network"></i><span>Overview</span>
+      </a>
+      <a href="#" class="nav-item" data-view="heatmap" id="navHeatmap">
+        <i class="fas fa-fire-flame-curved"></i><span>Demand Heat Map</span>
+      </a>
+      <a href="#" class="nav-item" data-view="expansion" id="navExpansion">
+        <i class="fas fa-bullseye-arrow"></i><span>Expansion Zones</span>
+      </a>
+      <a href="#" class="nav-item" data-view="sales" id="navSales">
+        <i class="fas fa-chart-bar"></i><span>Sales Breakdown</span>
+      </a>
+
+      <div class="nav-section-label" style="margin-top:18px;">Filters</div>
+
+      <div class="filter-group">
+        <label class="filter-label" for="filterRegion">Region</label>
+        <select class="filter-select" id="filterRegion">
+          <option value="all">🌍 All Regions</option>
+          <optgroup label="🇮🇳 India">
+            <option value="india-north">India — North</option>
+            <option value="india-south">India — South</option>
+            <option value="india-east">India — East</option>
+            <option value="india-west">India — West</option>
+          </optgroup>
+          <optgroup label="🌏 Global">
+            <option value="apac">Asia-Pacific</option>
+            <option value="europe">Europe</option>
+            <option value="americas">Americas</option>
+            <option value="mea">Middle East & Africa</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label" for="filterCategory">Store Type</label>
+        <select class="filter-select" id="filterCategory">
+          <option value="all">All Types</option>
+          <option value="flagship">Flagship</option>
+          <option value="standard">Standard</option>
+          <option value="small">Small</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Opportunity Score</label>
+        <div class="score-toggles">
+          <button class="score-btn active" data-score="high"   id="scoreHigh">High 85+</button>
+          <button class="score-btn active" data-score="medium" id="scoreMed">Med 70+</button>
+          <button class="score-btn"        data-score="low"    id="scoreLow">Low &lt;70</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Min Revenue</label>
+        <div class="range-wrapper">
+          <input type="range" class="range-input" id="revenueFilter" min="0" max="90" value="0" step="5" />
+          <div class="range-labels">
+            <span>₹0</span>
+            <span id="rangeVal">Any</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="data-freshness">
+        <i class="fas fa-circle-check"></i>
+        <span>Data: May 2026 · 26 markets</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+  <main class="main-content" id="mainContent">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title">India &amp; Global Expansion Intelligence</h1>
+        <p class="page-subtitle" id="pageSubtitle">Geospatial demand analysis · 26 active markets · 20 expansion zones</p>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-badge" id="opportunityBadge">
+          <i class="fas fa-location-dot"></i>
+          <span id="opportunityCount">20</span> Opportunity Zones
+        </div>
+        <button class="btn-icon" id="resetViewBtn" title="Reset map view">
+          <i class="fas fa-compress-arrows-alt"></i>
+        </button>
+        <button class="btn-primary" id="exportBtn">
+          <i class="fas fa-download"></i> Export
+        </button>
+      </div>
+    </header>
+
+    <!-- KPI Cards -->
+    <section class="kpi-row" aria-label="Key performance indicators">
+      <div class="kpi-card" id="kpiTotalRevenue" tabindex="0">
+        <div class="kpi-icon revenue-icon"><i class="fas fa-indian-rupee-sign"></i></div>
+        <div class="kpi-info">
+          <div class="kpi-value" id="kvRevenue">₹0</div>
+          <div class="kpi-label">Total Annual Revenue</div>
+          <div class="kpi-change positive"><i class="fas fa-arrow-trend-up"></i> +18.4% avg YoY</div>
+        </div>
+        <canvas class="kpi-sparkline" id="sparkRevenue" width="80" height="36"></canvas>
+      </div>
+      <div class="kpi-card" id="kpiLocations" tabindex="0">
+        <div class="kpi-icon location-icon"><i class="fas fa-store"></i></div>
+        <div class="kpi-info">
+          <div class="kpi-value" id="kvLocations">0</div>
+          <div class="kpi-label">Active Markets</div>
+          <div class="kpi-change positive"><i class="fas fa-arrow-trend-up"></i> +4 this quarter</div>
+        </div>
+        <canvas class="kpi-sparkline" id="sparkLocations" width="80" height="36"></canvas>
+      </div>
+      <div class="kpi-card" id="kpiOpportunity" tabindex="0">
+        <div class="kpi-icon opportunity-icon"><i class="fas fa-bullseye"></i></div>
+        <div class="kpi-info">
+          <div class="kpi-value" id="kvOpportunity">0</div>
+          <div class="kpi-label">Expansion Targets</div>
+          <div class="kpi-change neutral"><i class="fas fa-circle-info"></i> 12 India · 8 Global</div>
+        </div>
+        <canvas class="kpi-sparkline" id="sparkOpportunity" width="80" height="36"></canvas>
+      </div>
+      <div class="kpi-card" id="kpiGrowth" tabindex="0">
+        <div class="kpi-icon coverage-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="kpi-info">
+          <div class="kpi-value" id="kvGrowth">0%</div>
+          <div class="kpi-label">Avg Market Growth</div>
+          <div class="kpi-change positive"><i class="fas fa-arrow-trend-up"></i> India leads at +21%</div>
+        </div>
+        <canvas class="kpi-sparkline" id="sparkGrowth" width="80" height="36"></canvas>
+      </div>
+    </section>
+
+    <!-- Map + Side Panels -->
+    <section class="map-section" aria-label="Interactive map">
+      <div class="map-container">
+        <div class="map-toolbar">
+          <div class="layer-controls">
+            <button class="layer-btn active" data-layer="sales" id="btnSalesLayer" aria-pressed="true">
+              <i class="fas fa-circle-dot"></i> Stores
+            </button>
+            <button class="layer-btn active" data-layer="demand" id="btnDemandLayer" aria-pressed="true">
+              <i class="fas fa-fire"></i> Demand
+            </button>
+            <button class="layer-btn active" data-layer="expansion" id="btnExpansionLayer" aria-pressed="true">
+              <i class="fas fa-crosshairs"></i> Targets
+            </button>
+          </div>
+          <div class="map-search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search city, country…" id="mapSearch" aria-label="Search locations" />
+            <div class="search-dropdown" id="searchDropdown"></div>
+          </div>
+          <div class="view-controls">
+            <button class="view-btn active" id="btnMapView" title="Dark map">
+              <i class="fas fa-map"></i>
+            </button>
+            <button class="view-btn" id="btnSatView" title="Satellite">
+              <i class="fas fa-satellite"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="map" role="application" aria-label="Geospatial map"></div>
+
+        <div class="map-legend" aria-label="Map legend">
+          <div class="legend-title">Legend</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#00f5a0;box-shadow:0 0 6px #00f5a080;"></div> Active Store</div>
+          <div class="legend-item"><div class="legend-dot pulse-dot" style="background:#ff6b6b;"></div> High Opportunity</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ffd93d;box-shadow:0 0 6px #ffd93d80;"></div> Med Opportunity</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#4a9eff;box-shadow:0 0 6px #4a9eff60;"></div> Low Opportunity</div>
+          <div class="legend-item" style="margin-top:6px;"><div class="legend-gradient"></div> Demand intensity</div>
+        </div>
+
+        <!-- India Quick-zoom buttons -->
+        <div class="india-quickzoom" id="indiaQuickZoom">
+          <span class="qz-label">Quick Zoom</span>
+          <button class="qz-btn" data-region="india-north">North</button>
+          <button class="qz-btn" data-region="india-south">South</button>
+          <button class="qz-btn" data-region="india-east">East</button>
+          <button class="qz-btn" data-region="india-west">West</button>
+          <button class="qz-btn" data-region="all">World</button>
+        </div>
+      </div>
+
+      <div class="side-panels">
+        <!-- Opportunity Zones Panel -->
+        <div class="panel" id="panelOpportunity">
+          <div class="panel-header">
+            <h3><i class="fas fa-bullseye-arrow"></i> Top Opportunity Zones</h3>
+            <span class="panel-badge">Live</span>
+          </div>
+          <div class="opportunity-list" id="opportunityList"></div>
+        </div>
+
+        <!-- Regional Donut -->
+        <div class="panel" id="panelRegional">
+          <div class="panel-header">
+            <h3><i class="fas fa-chart-pie"></i> Revenue by Region</h3>
+          </div>
+          <canvas id="regionalChart" height="185"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Charts -->
+    <section class="charts-row" aria-label="Analytics charts">
+      <div class="chart-card" id="chartSalesTrend">
+        <div class="chart-header">
+          <h3>Revenue Trend by Region</h3>
+          <div class="chart-period-selector">
+            <button class="period-btn" data-period="6m" id="period6m">6M</button>
+            <button class="period-btn active" data-period="12m" id="period12m">1Y</button>
+            <button class="period-btn" data-period="2y" id="period2y">2Y</button>
+          </div>
+        </div>
+        <canvas id="trendChart" height="145"></canvas>
+      </div>
+
+      <div class="chart-card" id="chartScatter">
+        <div class="chart-header">
+          <h3>Demand vs. Presence Index</h3>
+          <div class="chart-info" title="Top-left quadrant = High demand, Low presence = Best expansion zones">
+            <i class="fas fa-circle-info"></i> How to read
+          </div>
+        </div>
+        <canvas id="scatterChart" height="145"></canvas>
+      </div>
+
+      <div class="chart-card narrow" id="chartScoreCard">
+        <div class="chart-header"><h3>Expansion Score</h3></div>
+        <div class="score-gauge-wrapper">
+          <canvas id="gaugeChart" height="130" width="184"></canvas>
+          <div class="gauge-label">
+            <span class="gauge-value" id="gaugeVal">82</span>
+            <span class="gauge-sub">/ 100</span>
+          </div>
+        </div>
+        <p class="gauge-desc">Strong expansion signal — 8 priority India markets identified</p>
+      </div>
+    </section>
+
+  </main><!-- /.main-content -->
+
+  <!-- ═══════════════ MODAL ═══════════════ -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal" id="locationModal">
+      <button class="modal-close" id="modalClose" aria-label="Close modal"><i class="fas fa-xmark"></i></button>
+      <div class="modal-header">
+        <div class="modal-icon" id="modalIconWrap"><i class="fas fa-location-dot"></i></div>
+        <div>
+          <h2 class="modal-title" id="modalTitle">Location</h2>
+          <p class="modal-subtitle" id="modalSubtitle">Region</p>
+        </div>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ TOAST ═══════════════ -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMsg">Action completed</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
